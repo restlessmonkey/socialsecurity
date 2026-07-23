@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#245b78">
+  <meta name="description" content="A privacy-friendly Social Security retirement planning calculator.">
+  <title>Social Security Planner</title>
+
+  <style>
+    :root {
+      --background: #f4f7f9;
+      --surface: #ffffff;
+      --primary: #245b78;
+      --primary-dark: #193f54;
+      --accent: #d68b42;
+      --text: #24323b;
+      --muted: #647681;
+      --border: #d9e1e6;
+      --success: #2e7651;
+      --shadow: 0 8px 24px rgba(30, 55, 70, 0.09);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--background);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: white;
+      padding: 34px 20px 30px;
+    }
+
+    header .inner,
+    main {
+      width: min(1080px, calc(100% - 28px));
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(2rem, 6vw, 3.2rem);
+      line-height: 1.08;
+    }
+
+    header p {
+      margin: 0;
+      max-width: 720px;
+      color: rgba(255, 255, 255, 0.88);
+    }
+
+    main {
+      padding: 22px 0 50px;
+    }
+
+    .privacy-note {
+      background: #eaf4ef;
+      border: 1px solid #bdd8ca;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+    }
+
+    .privacy-note strong {
+      color: var(--success);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .card.full {
+      grid-column: 1 / -1;
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 1.3rem;
+      color: var(--primary-dark);
+    }
+
+    h3 {
+      margin: 18px 0 10px;
+      font-size: 1.05rem;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+    }
+
+    .hint {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 400;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 46px;
+      border: 1px solid #b8c6ce;
+      border-radius: 10px;
+      background: white;
+      color: var(--text);
+      font: inherit;
+      padding: 10px 12px;
+    }
+
+    input:focus,
+    select:focus {
+      outline: 3px solid rgba(36, 91, 120, 0.18);
+      border-color: var(--primary);
+    }
+
+    button {
+      width: 100%;
+      min-height: 50px;
+      margin-top: 18px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #25170a;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      background: #f5f9fb;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 15px;
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .metric .value {
+      display: block;
+      margin-top: 5px;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 680px;
+      border-collapse: collapse;
+      background: white;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      text-align: right;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th:first-child,
+    td:first-child {
+      text-align: left;
+    }
+
+    th {
+      background: #edf3f6;
+      color: var(--primary-dark);
+      font-size: 0.84rem;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .best-row {
+      background: #eef8f2;
+      font-weight: 700;
+    }
+
+    .explanation {
+      margin-top: 16px;
+      padding: 16px;
+      border-left: 5px solid var(--accent);
+      background: #fff8ee;
+      border-radius: 8px 12px 12px 8px;
+    }
+
+    footer {
+      width: min(1080px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 0 0 36px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .error {
+      color: #9c2929;
+      font-weight: 700;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 760px) {
+      .grid,
+      .field-grid,
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      .card.full {
+        grid-column: auto;
+      }
+
+      header {
+        padding-top: 26px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="inner">
+      <h1>Social Security Planner</h1>
+      <p>
+        Compare retirement filing ages, estimated spousal benefits,
+        survivor benefits and lifetime household income.
+      </p>
+    </div>
+  </header>
+
+  <main>
+    <div class="privacy-note">
+      <strong>Privacy friendly:</strong>
+      the calculator starts with fictional example information. Calculations run only
+      in your browser and are not transmitted or saved by this page.
+    </div>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Primary earner</h2>
+
+        <div class="field-grid">
+          <div>
+            <label for="primaryDob">Date of birth</label>
+            <input id="primaryDob" type="date" value="1965-01-15">
+          </div>
+
+          <div>
+            <label for="primaryPia">
+              Benefit at full retirement age
+              <span class="hint">Estimated monthly benefit in today’s dollars</span>
+            </label>
+            <input id="primaryPia" type="number" min="0" step="10" value="2800">
+          </div>
+
+          <div>
+            <label for="primaryClaimAge">Planned claiming age</label>
+            <select id="primaryClaimAge"></select>
+          </div>
+
+          <div>
+            <label for="primaryDeathAge">Planning age at death</label>
+            <input id="primaryDeathAge" type="number" min="62" max="120" value="85">
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Spouse</h2>
+
+        <div class="field-grid">
+          <div>
+            <label for="spouseDob">Date of birth</label>
+            <input id="spouseDob" type="date" value="1963-06-20">
+          </div>
+
+          <div>
+            <label for="spouseOwnPia">
+              Spouse’s own benefit at full retirement age
+              <span class="hint">Enter 0 when there is no meaningful work-record benefit</span>
+            </label>
+            <input id="spouseOwnPia" type="number" min="0" step="10" value="0">
+          </div>
+
+          <div>
+            <label for="spouseClaimAge">Planned claiming age</label>
+            <select id="spouseClaimAge"></select>
+          </div>
+
+          <div>
+            <label for="spouseDeathAge">Planning age at death</label>
+            <input id="spouseDeathAge" type="number" min="62" max="120" value="90">
+          </div>
+        </div>
+      </section>
+
+      <section class="card full">
+        <h2>Planning assumptions</h2>
+
+        <div class="field-grid">
+          <div>
+            <label for="colaRate">
+              Annual cost-of-living adjustment
+              <span class="hint">Used for lifetime nominal-dollar estimates</span>
+            </label>
+            <input id="colaRate" type="number" min="0" max="10" step="0.1" value="2.5">
+          </div>
+
+          <div>
+            <label for="discountRate">
+              Annual discount rate
+              <span class="hint">Used to estimate present value</span>
+            </label>
+            <input id="discountRate" type="number" min="0" max="15" step="0.1" value="3">
+          </div>
+        </div>
+
+        <button id="calculateButton" type="button">Calculate retirement strategy</button>
+        <div id="errorMessage" class="error" role="alert"></div>
+      </section>
+
+      <section class="card full">
+        <h2>Selected strategy</h2>
+
+        <div class="summary">
+          <div class="metric">
+            <span class="label">Primary monthly benefit</span>
+            <span id="primaryMonthly" class="value">$0</span>
+          </div>
+
+          <div class="metric">
+            <span class="label">Spouse monthly benefit</span>
+            <span id="spouseMonthly" class="value">$0</span>
+          </div>
+
+          <div class="metric">
+            <span class="label">Estimated survivor benefit</span>
+            <span id="survivorMonthly" class="value">$0</span>
+          </div>
+
+          <div class="metric">
+            <span class="label">Lifetime household benefits</span>
+            <span id="lifetimeTotal" class="value">$0</span>
+          </div>
+        </div>
+
+        <div id="strategyExplanation" class="explanation"></div>
+      </section>
+
+      <section class="card full">
+        <h2>Primary earner claiming-age comparison</h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Claiming age</th>
+                <th>Primary monthly</th>
+                <th>Spouse monthly</th>
+                <th>Survivor monthly</th>
+                <th>Lifetime household</th>
+                <th>Present value</th>
+              </tr>
+            </thead>
+            <tbody id="comparisonBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    This is an educational planning tool, not an official Social Security Administration
+    calculation, legal advice or financial advice. Actual benefits depend on earnings
+    records, filing dates, eligibility rules, Medicare premiums, taxation and future law.
+    Verify decisions with your official Social Security statement or a qualified adviser.
+  </footer>
+
+  <script>
+    "use strict";
+
+    const money = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0
+    });
+
+    const claimAges = [
+      { label: "62", value: 62 },
+      { label: "63", value: 63 },
+      { label: "64", value: 64 },
+      { label: "65", value: 65 },
+      { label: "66", value: 66 },
+      { label: "67 — Full retirement age", value: 67 },
+      { label: "68", value: 68 },
+      { label: "69", value: 69 },
+      { label: "70", value: 70 }
+    ];
+
+    function fillClaimAgeSelect(selectId, selectedAge) {
+      const select = document.getElementById(selectId);
+      select.innerHTML = "";
+
+      claimAges.forEach(item => {
+        const option = document.createElement("option");
+        option.value = item.value;
+        option.textContent = item.label;
+        option.selected = item.value === selectedAge;
+        select.appendChild(option);
+      });
+    }
+
+    function ageAdjustment(claimAge) {
+      if (claimAge < 67) {
+        const monthsEarly = Math.round((67 - claimAge) * 12);
+
+        if (monthsEarly <= 36) {
+          return 1 - monthsEarly * (5 / 9 / 100);
+        }
+
+        return 1
+          - 36 * (5 / 9 / 100)
+          - (monthsEarly - 36) * (5 / 12 / 100);
+      }
+
+      if (claimAge > 67) {
+        return 1 + (claimAge - 67) * 0.08;
+      }
+
+      return 1;
+    }
+
+    function spouseReductionFactor(claimAge) {
+      if (claimAge >= 67) {
+        return 1;
+      }
+
+      const monthsEarly = Math.round((67 - claimAge) * 12);
+      const first36 = Math.min(monthsEarly, 36);
+      const remaining = Math.max(monthsEarly - 36, 0);
+
+      return Math.max(
+        0,
+        1
+          - first36 * (25 / 36 / 100)
+          - remaining * (5 / 12 / 100)
+      );
+    }
+
+    function calculateScenario(primaryClaimAge) {
+      const primaryPia = Number(document.getElementById("primaryPia").value);
+      const spouseOwnPia = Number(document.getElementById("spouseOwnPia").value);
+      const spouseClaimAge = Number(document.getElementById("spouseClaimAge").value);
+      const primaryDeathAge = Number(document.getElementById("primaryDeathAge").value);
+      const spouseDeathAge = Number(document.getElementById("spouseDeathAge").value);
+      const cola = Number(document.getElementById("colaRate").value) / 100;
+      const discount = Number(document.getElementById("discountRate").value) / 100;
+
+      const primaryMonthly = primaryPia * ageAdjustment(primaryClaimAge);
+      const spouseOwnMonthly = spouseOwnPia * ageAdjustment(spouseClaimAge);
+
+      const maximumSpousalBase = primaryPia * 0.5;
+      const reducedSpousalBase =
+        maximumSpousalBase * spouseReductionFactor(spouseClaimAge);
+
+      const spouseMonthly = Math.max(spouseOwnMonthly, reducedSpousalBase);
+      const survivorMonthly = Math.max(primaryMonthly, spouseOwnMonthly);
+
+      const primaryMonths =
+        Math.max(0, Math.round((primaryDeathAge - primaryClaimAge) * 12));
+
+      const spouseStartAge = Math.max(spouseClaimAge, primaryClaimAge);
+      const spouseMonthsBeforePrimaryDeath =
+        Math.max(
+          0,
+          Math.round(
+            (Math.min(spouseDeathAge, primaryDeathAge) - spouseStartAge) * 12
+          )
+        );
+
+      const survivorMonths =
+        spouseDeathAge > primaryDeathAge
+          ? Math.max(0, Math.round((spouseDeathAge - primaryDeathAge) * 12))
+          : 0;
+
+      let lifetime = 0;
+      let presentValue = 0;
+
+      const maximumMonths = Math.max(
+        primaryMonths,
+        spouseMonthsBeforePrimaryDeath + survivorMonths
+      );
+
+      for (let month = 0; month < maximumMonths; month++) {
+        const years = month / 12;
+        const inflationFactor = Math.pow(1 + cola, years);
+        const discountFactor = Math.pow(1 + discount, years);
+
+        let monthlyHouseholdBenefit = 0;
+
+        if (month < primaryMonths) {
+          monthlyHouseholdBenefit += primaryMonthly;
+        }
+
+        if (month < spouseMonthsBeforePrimaryDeath) {
+          monthlyHouseholdBenefit += spouseMonthly;
+        } else if (
+          month >= spouseMonthsBeforePrimaryDeath &&
+          month < spouseMonthsBeforePrimaryDeath + survivorMonths
+        ) {
+          monthlyHouseholdBenefit += survivorMonthly;
+        }
+
+        lifetime += monthlyHouseholdBenefit * inflationFactor;
+        presentValue +=
+          monthlyHouseholdBenefit * inflationFactor / discountFactor;
+      }
+
+      return {
+        primaryClaimAge,
+        primaryMonthly,
+        spouseMonthly,
+        survivorMonthly,
+        lifetime,
+        presentValue
+      };
+    }
+
+    function validateInputs() {
+      const requiredNumbers = [
+        "primaryPia",
+        "spouseOwnPia",
+        "primaryDeathAge",
+        "spouseDeathAge",
+        "colaRate",
+        "discountRate"
+      ];
+
+      for (const id of requiredNumbers) {
+        const value = Number(document.getElementById(id).value);
+
+        if (!Number.isFinite(value) || value < 0) {
+          return "Please enter valid non-negative numbers in every field.";
+        }
+      }
+
+      const primaryClaimAge =
+        Number(document.getElementById("primaryClaimAge").value);
+      const spouseClaimAge =
+        Number(document.getElementById("spouseClaimAge").value);
+      const primaryDeathAge =
+        Number(document.getElementById("primaryDeathAge").value);
+      const spouseDeathAge =
+        Number(document.getElementById("spouseDeathAge").value);
+
+      if (primaryDeathAge <= primaryClaimAge) {
+        return "The primary earner’s planning age at death must be above the claiming age.";
+      }
+
+      if (spouseDeathAge <= spouseClaimAge) {
+        return "The spouse’s planning age at death must be above the claiming age.";
+      }
+
+      return "";
+    }
+
+    function render() {
+      const errorMessage = document.getElementById("errorMessage");
+      const error = validateInputs();
+
+      if (error) {
+        errorMessage.textContent = error;
+        return;
+      }
+
+      errorMessage.textContent = "";
+
+      const selectedClaimAge =
+        Number(document.getElementById("primaryClaimAge").value);
+
+      const selected = calculateScenario(selectedClaimAge);
+
+      document.getElementById("primaryMonthly").textContent =
+        money.format(selected.primaryMonthly);
+
+      document.getElementById("spouseMonthly").textContent =
+        money.format(selected.spouseMonthly);
+
+      document.getElementById("survivorMonthly").textContent =
+        money.format(selected.survivorMonthly);
+
+      document.getElementById("lifetimeTotal").textContent =
+        money.format(selected.lifetime);
+
+      const scenarios = claimAges.map(item =>
+        calculateScenario(item.value)
+      );
+
+      const bestScenario = scenarios.reduce((best, current) =>
+        current.lifetime > best.lifetime ? current : best
+      );
+
+      const difference =
+        bestScenario.lifetime - selected.lifetime;
+
+      const explanation = document.getElementById("strategyExplanation");
+
+      if (bestScenario.primaryClaimAge === selectedClaimAge) {
+        explanation.innerHTML =
+          "<strong>Based on the assumptions entered, this claiming age produces the highest estimated lifetime household benefit among ages 62 through 70.</strong> " +
+          "This result may change when you adjust longevity, benefit estimates or filing ages.";
+      } else {
+        explanation.innerHTML =
+          "Under the assumptions entered, claiming at age <strong>" +
+          bestScenario.primaryClaimAge +
+          "</strong> produces the highest estimated lifetime household benefit. " +
+          "That estimate is approximately <strong>" +
+          money.format(difference) +
+          "</strong> more than the currently selected primary-earner claiming age.";
+      }
+
+      const body = document.getElementById("comparisonBody");
+      body.innerHTML = "";
+
+      scenarios.forEach(scenario => {
+        const row = document.createElement("tr");
+
+        if (scenario.primaryClaimAge === bestScenario.primaryClaimAge) {
+          row.className = "best-row";
+        }
+
+        row.innerHTML = `
+          <td>
+            ${scenario.primaryClaimAge}
+            ${scenario.primaryClaimAge === bestScenario.primaryClaimAge ? " ★" : ""}
+          </td>
+          <td>${money.format(scenario.primaryMonthly)}</td>
+          <td>${money.format(scenario.spouseMonthly)}</td>
+          <td>${money.format(scenario.survivorMonthly)}</td>
+          <td>${money.format(scenario.lifetime)}</td>
+          <td>${money.format(scenario.presentValue)}</td>
+        `;
+
+        body.appendChild(row);
+      });
+    }
+
+    fillClaimAgeSelect("primaryClaimAge", 67);
+    fillClaimAgeSelect("spouseClaimAge", 67);
+
+    document
+      .getElementById("calculateButton")
+      .addEventListener("click", render);
+
+    document
+      .querySelectorAll("input, select")
+      .forEach(element => element.addEventListener("change", render));
+
+    render();
+  </script>
+</body>
+</html>
