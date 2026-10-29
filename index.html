@@ -279,7 +279,7 @@
     <div class="privacy-note">
       <strong>Privacy friendly:</strong>
       the calculator starts with fictional example information. Calculations run only
-      in your browser and are not transmitted or saved by this page.
+      in your browser and are not transmitted or saved by this page. Cloudflare Web Analytics counts aggregate visits and page performance without analytics cookies or local storage. Calculator inputs and results are not sent as analytics events.
     </div>
 
     <div class="grid">
@@ -705,5 +705,19 @@
 
     render();
   </script>
+
+<!-- Restless Monkey Cloudflare Web Analytics · v1.0 · 2026-10-29 -->
+<script>
+(function () {
+  if (location.hostname !== "restlessmonkey.github.io" || !location.pathname.startsWith("/socialsecurity/")) return;
+  if (document.querySelector("script[data-cf-beacon]")) return;
+  var beacon = document.createElement("script");
+  beacon.type = "module";
+  beacon.src = "https://static.cloudflareinsights.com/beacon.min.js";
+  beacon.referrerPolicy = "strict-origin-when-cross-origin";
+  beacon.setAttribute("data-cf-beacon", '{"token":"66b71dd61ca746e39eb13105b9ee21fa","spa":false}');
+  document.body.appendChild(beacon);
+})();
+</script>
 </body>
 </html>
